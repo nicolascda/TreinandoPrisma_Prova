@@ -1,0 +1,62 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model categorias {
+  id       Int        @id @default(autoincrement())
+  nome     String     @db.VarChar(255)
+
+  produtos produtos[]
+}
+
+model entradas {
+  id             Int      @id @default(autoincrement())
+  id_produto     Int
+  data_entrada   DateTime @default(now()) @db.DateTime(0)
+  quantidade     Int
+
+  produto produtos @relation(fields: [id_produto], references: [id])
+
+  @@index([id_produto], map: "fk_entradas")
+}
+
+model produtos {
+  id             Int      @id @default(autoincrement())
+  nome           String   @db.VarChar(255)
+  id_categoria   Int
+  unidade_medida String   @db.VarChar(20)
+  valor_unitario Decimal  @db.Decimal(10, 2)
+  quantidade     Int  
+
+  categoria categorias @relation(fields: [id_categoria], references: [id])
+  entradas  entradas[]
+  saidas    saidas[]
+
+  @@index([id_categoria], map: "fk_produtos")
+}
+
+model saidas {
+  id             Int      @id @default(autoincrement())
+  id_produto     Int
+  data_saida     DateTime @default(now()) @db.DateTime(0)
+  quantidade     Int
+
+  produto produtos @relation(fields: [id_produto], references: [id])
+
+  @@index([id_produto], map: "fk_saidas")
+}
+
+view vw_estoque {
+  id             Int     @default(0)
+  nome_produto   String  @db.VarChar(255)
+  categoria      String  @db.VarChar(255)
+  unidade_medida String  @db.VarChar(20)
+  quantidade     Decimal @default(0.00) @db.Decimal(10, 2)
+  valor_unitario Decimal @db.Decimal(10, 2)
+  valor_total    Decimal @default(0.00) @db.Decimal(19, 2)
+}
